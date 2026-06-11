@@ -51,30 +51,31 @@ export default function CTPage() {
   }
 
   async function onPredict() {
-    const data = getValues();
-    setPredicting(true);
-    try {
-      const res = await fetch("/api/predict/ct", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          specification: data.voltageRating,
-          ct_ratio_num: data.ctRatio,
-          burden: data.burden,
-          stc: data.stc,
-          bdv_oil: data.bdvOil,
-          primary_to_secondary: data.primaryToSecondary,
-          primary_to_earth: data.primaryToEarth,
-          secondary_to_earth: data.secondaryToEarth,
-        }),
-      });
-      const json = await res.json();
-      setPredictions(json.predictions);
-    } catch {
-      setPredictions(null);
-    }
-    setPredicting(false);
+  const data = getValues();
+  setPredicting(true);
+  try {
+    const res = await fetch("/api/predict/ct", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        specification: data.voltageRating,
+        ct_ratio_num: data.ctRatio,
+        burden: data.burden,
+        stc: data.stc,
+        bdv_oil: data.bdvOil,
+        primary_to_secondary: data.primaryToSecondary,
+        primary_to_earth: data.primaryToEarth,
+        secondary_to_earth: data.secondaryToEarth,
+        type_encoded: data.type === "Oil Cooled" ? 1.0 : 0.0,
+      }),
+    });
+    const json = await res.json();
+    setPredictions(json.predictions);
+  } catch {
+    setPredictions(null);
   }
+  setPredicting(false);
+}
 
   const inputClass = "w-full px-3 py-2.5 rounded-lg bg-[#0a0f1e] border border-[#1e3a5f] text-[#e2e8f0] text-sm placeholder-[#374151] outline-none transition-all duration-200 focus:border-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)]";
   const labelClass = "text-[#9ca3af] text-xs font-medium tracking-widest uppercase mb-1.5 block";
@@ -289,7 +290,32 @@ export default function CTPage() {
                         </div>
                       </div>
 
-                      {[
+                      {[async function onPredict() {
+  const data = getValues();
+  setPredicting(true);
+  try {
+    const res = await fetch("/api/predict/ct", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        specification: data.voltageRating,
+        ct_ratio_num: data.ctRatio,
+        burden: data.burden,
+        stc: data.stc,
+        bdv_oil: data.bdvOil,
+        primary_to_secondary: data.primaryToSecondary,
+        primary_to_earth: data.primaryToEarth,
+        secondary_to_earth: data.secondaryToEarth,
+        type_encoded: data.type === "Oil Cooled" ? 1.0 : 0.0,
+      }),
+    });
+    const json = await res.json();
+    setPredictions(json.predictions);
+  } catch {
+    setPredictions(null);
+  }
+  setPredicting(false);
+}
                         { label: "Insulation on Core", value: `${results.insulationOnCore} mm` },
                         { label: "Primary Turns", value: results.primaryTurns },
                         { label: "Secondary Turns", value: results.secondaryTurns },

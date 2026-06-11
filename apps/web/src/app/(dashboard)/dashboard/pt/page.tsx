@@ -47,29 +47,29 @@ export default function PTPage() {
   }
 
   async function onPredict() {
-    const data = getValues();
-    setPredicting(true);
-    try {
-      const res = await fetch("/api/predict/pt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          specification: data.voltageRating,
-          burden: data.burden,
-          class: data.classType,
-          bdv_oil: data.bdvOil,
-          primary_to_secondary: data.primaryToSecondary,
-          primary_to_earth: data.primaryToEarth,
-          secondary_to_earth: data.secondaryToEarth,
-        }),
-      });
-      const json = await res.json();
-      setPredictions(json.predictions);
-    } catch {
-      setPredictions(null);
-    }
-    setPredicting(false);
+  const data = getValues();
+  setPredicting(true);
+  try {
+    const res = await fetch("/api/predict/pt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        specification: data.voltageRating,
+        burden: data.burden,
+        class_type: parseFloat(data.classType),
+        bdv_oil: data.bdvOil,
+        primary_to_secondary: data.primaryToSecondary,
+        primary_to_earth: data.primaryToEarth,
+        secondary_to_earth: data.secondaryToEarth,
+      }),
+    });
+    const json = await res.json();
+    setPredictions(json.predictions);
+  } catch {
+    setPredictions(null);
   }
+  setPredicting(false);
+}
 
   const inputClass = "w-full px-3 py-2.5 rounded-lg bg-[#0a0f1e] border border-[#1e3a5f] text-[#e2e8f0] text-sm placeholder-[#374151] outline-none transition-all duration-200 focus:border-[#f59e0b] focus:shadow-[0_0_10px_rgba(245,158,11,0.15)]";
   const labelClass = "text-[#9ca3af] text-xs font-medium tracking-widest uppercase mb-1.5 block";
