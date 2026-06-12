@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { computePT, PTOutputs } from "@/lib/computations/pt";
+import { Model3DEmbed } from "@/components/Model3DEmbed";
+import { PrintButton } from "@/components/PrintButton";
 
 const ptSchema = z.object({
   burden: z.coerce.number().positive(),
@@ -20,6 +22,7 @@ type PTFormData = z.infer<typeof ptSchema>;
 
 export default function PTPage() {
   const [results, setResults] = useState<PTOutputs | null>(null);
+  const [formInputs, setFormInputs] = useState<Record<string, unknown>>({});
   const [predictions, setPredictions] = useState<Record<string, number> | null>(null);
   const [predicting, setPredicting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -40,11 +43,12 @@ export default function PTPage() {
 });
 
   function onCompute(data: PTFormData) {
-    const output = computePT(data);
-    setResults(output);
-    setPredictions(null);
-    setComputed(true);
-  }
+  const output = computePT(data);
+  setResults(output);
+  setPredictions(null);
+  setComputed(true);
+  setFormInputs(data as unknown as Record<string, unknown>);
+}
 
   async function onPredict() {
   const data = getValues();
@@ -296,6 +300,18 @@ export default function PTPage() {
                     </div>
                   </div>
                 )}
+                {/* 3D Model */}
+{results && (
+  <Model3DEmbed type="Oil Cooled" />
+)}
+
+{/* Print Button */}
+<PrintButton
+  type="PT"
+  inputs={formInputs}
+  results={results}
+  predictions={predictions}
+/>
               </>
             )}
           </div>

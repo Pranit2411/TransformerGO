@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { computeCT, CTOutputs } from "@/lib/computations/ct";
+import { Model3DEmbed } from "@/components/Model3DEmbed";
+import { PrintButton } from "@/components/PrintButton";
 
 const ctSchema = z.object({
   type: z.enum(["Oil Cooled", "Epoxy/Dry"]),
@@ -26,56 +28,58 @@ export default function CTPage() {
   const [predicting, setPredicting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [computed, setComputed] = useState(false);
+  const [formInputs, setFormInputs] = useState<Record<string, unknown>>({});
 
   const { register, handleSubmit, getValues, formState: { errors } } = useForm({
-  resolver: zodResolver(ctSchema),
-  defaultValues: {
-    type: "Oil Cooled" as const,
-    burden: 15,
-    voltageRating: 11,
-    classType: "0.2",
-    ctRatio: 100,
-    stc: 13,
-    bdvOil: 40,
-    primaryToSecondary: 28,
-    primaryToEarth: 28,
-    secondaryToEarth: 3,
-  },
-});
+    resolver: zodResolver(ctSchema),
+    defaultValues: {
+      type: "Oil Cooled" as const,
+      burden: 15,
+      voltageRating: 11,
+      classType: "0.2",
+      ctRatio: 100,
+      stc: 13,
+      bdvOil: 40,
+      primaryToSecondary: 28,
+      primaryToEarth: 28,
+      secondaryToEarth: 3,
+    },
+  });
 
   function onCompute(data: CTFormData) {
     const output = computeCT(data);
     setResults(output);
     setPredictions(null);
     setComputed(true);
+    setFormInputs(data as unknown as Record<string, unknown>);
   }
 
   async function onPredict() {
-  const data = getValues();
-  setPredicting(true);
-  try {
-    const res = await fetch("/api/predict/ct", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        specification: data.voltageRating,
-        ct_ratio_num: data.ctRatio,
-        burden: data.burden,
-        stc: data.stc,
-        bdv_oil: data.bdvOil,
-        primary_to_secondary: data.primaryToSecondary,
-        primary_to_earth: data.primaryToEarth,
-        secondary_to_earth: data.secondaryToEarth,
-        type_encoded: data.type === "Oil Cooled" ? 1.0 : 0.0,
-      }),
-    });
-    const json = await res.json();
-    setPredictions(json.predictions);
-  } catch {
-    setPredictions(null);
+    const data = getValues();
+    setPredicting(true);
+    try {
+      const res = await fetch("/api/predict/ct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specification: data.voltageRating,
+          ct_ratio_num: data.ctRatio,
+          burden: data.burden,
+          stc: data.stc,
+          bdv_oil: data.bdvOil,
+          primary_to_secondary: data.primaryToSecondary,
+          primary_to_earth: data.primaryToEarth,
+          secondary_to_earth: data.secondaryToEarth,
+          type_encoded: data.type === "Oil Cooled" ? 1.0 : 0.0,
+        }),
+      });
+      const json = await res.json();
+      setPredictions(json.predictions);
+    } catch {
+      setPredictions(null);
+    }
+    setPredicting(false);
   }
-  setPredicting(false);
-}
 
   const inputClass = "w-full px-3 py-2.5 rounded-lg bg-[#0a0f1e] border border-[#1e3a5f] text-[#e2e8f0] text-sm placeholder-[#374151] outline-none transition-all duration-200 focus:border-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)]";
   const labelClass = "text-[#9ca3af] text-xs font-medium tracking-widest uppercase mb-1.5 block";
@@ -121,7 +125,6 @@ export default function CTPage() {
 
           {/* Left — Form */}
           <div className="rounded-2xl border border-[#1e3a5f] bg-[#111827] p-5 sm:p-6 relative overflow-hidden">
-            {/* Corner accents */}
             <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-[#00d4ff] rounded-tl-2xl opacity-50" />
             <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-[#00d4ff] rounded-br-2xl opacity-50" />
 
@@ -131,7 +134,6 @@ export default function CTPage() {
 
             <form onSubmit={handleSubmit(onCompute)} className="flex flex-col gap-4">
 
-              {/* Type */}
               <div>
                 <label className={labelClass}>Transformer Type</label>
                 <select {...register("type")} className={selectClass}>
@@ -140,7 +142,6 @@ export default function CTPage() {
                 </select>
               </div>
 
-              {/* Burden + Voltage in a row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Burden (VA)</label>
@@ -162,7 +163,6 @@ export default function CTPage() {
                 </div>
               </div>
 
-              {/* Class + CT Ratio in a row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Accuracy Class</label>
@@ -182,7 +182,6 @@ export default function CTPage() {
                 </div>
               </div>
 
-              {/* STC */}
               <div>
                 <label className={labelClass}>Short Time Current — STC (kA)</label>
                 <select {...register("stc")} className={selectClass}>
@@ -192,7 +191,6 @@ export default function CTPage() {
                 </select>
               </div>
 
-              {/* Advanced toggle */}
               <button type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="flex items-center gap-2 text-[#9ca3af] text-xs hover:text-[#00d4ff] transition-colors duration-200 mt-1"
@@ -227,7 +225,6 @@ export default function CTPage() {
                 </div>
               )}
 
-              {/* Submit */}
               <button type="submit"
                 className="w-full py-3 rounded-lg font-orbitron font-semibold tracking-wider text-[#0a0f1e] text-sm transition-all duration-300 relative overflow-hidden group mt-2"
                 style={{
@@ -273,7 +270,6 @@ export default function CTPage() {
                     </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Core Size */}
                       <div className="col-span-1 sm:col-span-2 p-3 rounded-xl bg-[#0a0f1e] border border-[#1e3a5f]">
                         <p className="text-[#9ca3af] text-xs uppercase tracking-widest mb-2">Core Size</p>
                         <div className="grid grid-cols-3 gap-2">
@@ -290,32 +286,7 @@ export default function CTPage() {
                         </div>
                       </div>
 
-                      {[async function onPredict() {
-  const data = getValues();
-  setPredicting(true);
-  try {
-    const res = await fetch("/api/predict/ct", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        specification: data.voltageRating,
-        ct_ratio_num: data.ctRatio,
-        burden: data.burden,
-        stc: data.stc,
-        bdv_oil: data.bdvOil,
-        primary_to_secondary: data.primaryToSecondary,
-        primary_to_earth: data.primaryToEarth,
-        secondary_to_earth: data.secondaryToEarth,
-        type_encoded: data.type === "Oil Cooled" ? 1.0 : 0.0,
-      }),
-    });
-    const json = await res.json();
-    setPredictions(json.predictions);
-  } catch {
-    setPredictions(null);
-  }
-  setPredicting(false);
-}
+                      {[
                         { label: "Insulation on Core", value: `${results.insulationOnCore} mm` },
                         { label: "Primary Turns", value: results.primaryTurns },
                         { label: "Secondary Turns", value: results.secondaryTurns },
@@ -331,7 +302,6 @@ export default function CTPage() {
                       ))}
                     </div>
 
-                    {/* Predict button */}
                     <button onClick={onPredict} disabled={predicting}
                       className="w-full mt-4 py-3 rounded-lg font-orbitron font-semibold tracking-wider text-sm transition-all duration-300 relative overflow-hidden group border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b15] disabled:opacity-50"
                     >
@@ -371,6 +341,19 @@ export default function CTPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 3D Model */}
+                {results && (
+                  <Model3DEmbed type={getValues("type") as "Oil Cooled" | "Epoxy/Dry"} />
+                )}
+
+                {/* Print Button */}
+                <PrintButton
+                  type="CT"
+                  inputs={formInputs}
+                  results={results}
+                  predictions={predictions}
+                />
               </>
             )}
           </div>
