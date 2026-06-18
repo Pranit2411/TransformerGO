@@ -2,7 +2,7 @@
 
 A full-stack engineering tool for designing Current Transformers (CT) and Potential Transformers (PT), with real machine-learning models predicting ratio and phase errors from lab-trained data.
 
-**Live demo:** [transformergo.vercel.app](#) · **ML API:** [transformergo-production.up.railway.app](https://transformergo-production.up.railway.app)
+**Live demo:** [transformergo.vercel.app](https://transformer-go-seven.vercel.app/) · **ML API:** [transformergo-production.up.railway.app](https://transformergo-production.up.railway.app)
 
 ---
 
